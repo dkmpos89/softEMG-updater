@@ -14,7 +14,10 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-
+    void downComponents();
+    void initProcess();
+public slots:
+    void execBatchFile();
 private:
     Ui::MainWindow *ui;
 };

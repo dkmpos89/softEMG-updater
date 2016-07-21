@@ -8,12 +8,28 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    DownloadManager *downManager = new DownloadManager(this);
-    const QUrl imageUrl("http://www.cuentamealgobueno.com/wp-content/uploads/2016/04/apadrina20160422.png");
-    downManager->doDownload(imageUrl);
+    downComponents();
+
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::downComponents()
+{
+    DownloadManager *downManager = new DownloadManager(this);
+    const QUrl iUrl("https://github.com/dkmpos89/softEGM_updates/raw/master/Tesis.exe");
+    downManager->doDownload(iUrl);
+}
+
+void MainWindow::initProcess()
+{
+    //
+}
+
+void MainWindow::execBatchFile()
+{
+    //
 }
