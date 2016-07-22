@@ -71,17 +71,15 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
         fprintf(stderr, "Download of %s failed: %s\n",
                 url.toEncoded().constData(),
                 qPrintable(reply->errorString()));
+        emit downFinished(false);
     } else {
         QString filename = saveFileName(url);
         if (saveToDisk(filename, reply))
             printf("Download of %s succeeded (saved to %s)\n",
                    url.toEncoded().constData(), qPrintable(filename));
+        emit downFinished(true);
     }
 
     currentDownloads.removeAll(reply);
     reply->deleteLater();
-
-    //if (currentDownloads.isEmpty())
-        // all downloads finished
-        //QCoreApplication::instance()->quit();
 }

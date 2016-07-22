@@ -50,9 +50,9 @@ Console::Console(QWidget *parent)
 
 }
 
-void Console::putData(const QByteArray &data)
+void Console::putData(const QString &data)
 {
-    insertPlainText(QString(data));
+    insertPlainText(data);
 
     QScrollBar *bar = verticalScrollBar();
     bar->setValue(bar->maximum());
@@ -75,7 +75,6 @@ void Console::keyPressEvent(QKeyEvent *e)
     default:
         if (localEchoEnabled)
             QPlainTextEdit::keyPressEvent(e);
-        emit getData(e->text().toLocal8Bit());
     }
 }
 
