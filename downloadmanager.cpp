@@ -1,4 +1,5 @@
 #include "downloadmanager.h"
+#include "QDir"
 
 DownloadManager::DownloadManager(QObject *parent) : QObject(parent)
 {
@@ -34,7 +35,6 @@ QString DownloadManager::saveFileName(const QUrl &url)
 
         basename += QString::number(i);
     }
-
     return basename;
 }
 
@@ -66,18 +66,17 @@ void DownloadManager::sslErrors(const QList<QSslError> &sslErrors)
 
 void DownloadManager::downloadFinished(QNetworkReply *reply)
 {
+    QString msg;
     QUrl url = reply->url();
     if (reply->error()) {
-        fprintf(stderr, "Download of %s failed: %s\n",
-                url.toEncoded().constData(),
-                qPrintable(reply->errorString()));
-        emit downFinished(false);
+        msg = "Download failed: "+reply->errorString()+"\n";
+        emit downFinished(false, msg);
     } else {
         QString filename = saveFileName(url);
+        filename.prepend(QDir::currentPath()+"/temp/");
         if (saveToDisk(filename, reply))
-            printf("Download of %s succeeded (saved to %s)\n",
-                   url.toEncoded().constData(), qPrintable(filename));
-        emit downFinished(true);
+            msg = "Download succeeded (saved to "+filename+")\n";
+        emit downFinished(true, msg);
     }
 
     currentDownloads.removeAll(reply);

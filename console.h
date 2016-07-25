@@ -37,7 +37,7 @@
 
 #include <QPlainTextEdit>
 
-class Console : public QPlainTextEdit
+class Console : public QTextEdit
 {
     Q_OBJECT
 

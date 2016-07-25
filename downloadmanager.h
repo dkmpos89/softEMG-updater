@@ -34,7 +34,7 @@ public:
     QString saveFileName(const QUrl &url);
     bool saveToDisk(const QString &filename, QIODevice *data);
 signals:
-    void downFinished(bool b);
+    void downFinished(bool b, QString msg);
 public slots:
     void downloadFinished(QNetworkReply *reply);
     void sslErrors(const QList<QSslError> &errors);

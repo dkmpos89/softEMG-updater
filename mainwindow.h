@@ -15,15 +15,20 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    enum {compVersion,execBatch,other};
+    enum {msg_alert,msg_notify,msg_info};
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void downComponents(QString url);
+    void downComponents(QString url, int postOp);
     void initProcess();
     void mkdirTemp(bool f);
+    void writeText(QString text, int color);
 public slots:
     void execBatchFile(bool b);
     void readOutput();
     void readError();
+    QString getVersionXML(QString file);
+    void compararVersiones(bool downSucc, QString strError);
 private:
     Ui::MainWindow *ui;
     QProcess *batProcess;

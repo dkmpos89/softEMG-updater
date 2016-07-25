@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<map version="1.0">
+	<info name="informacion">
+		<autor>Diego Campos</autor>
+		<fecha>25-07-2016</fecha>
+		<data encoding="base64" compression="zlib"></data>
+	</info>
+	<detalle name="descripcion">
+		<nversion>1.0</nversion>
+		<data encoding="base64" compression="zlib">
+			1) Analisis multiple con Moving RMS y Mean Frequency.
+			2) Tabla de datos estadisticos a la ventana principal.
+		</data>
+	</detalle>
+</map>
