@@ -30,9 +30,11 @@ public slots:
     void readError();
     QString getVersionXML(QString file);
     void compararVersiones(bool downSucc, QString strError);
+    void progressBarSetValue(int val);
 private slots:
     void on_actionStart_triggered();
-
+signals:
+    errorGeneral(int);
 private:
     Ui::MainWindow *ui;
     QProcess *batProcess;
@@ -41,6 +43,9 @@ private:
     const QString UPDATER = QString("cmd");
     const QStringList ARGUMENTS = ( QStringList()<<"" );
     const QString WORKING_DIR = QString("'"+QDir::currentPath()+"'\n");
+
+    bool soft_actualizando = false; // indica si se inicio alguna actualizacion del software
+    QTimer *mtimer;
 };
 
 #endif // MAINWINDOW_H

@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setLogoEMG();
 
-
+    connect(this, SIGNAL(errorGeneral(int)), ui->progressBar, SLOT(setValue(int)) );
     // paso 1: Creacion de directorio temporal
     // mkdirTemp(true);
 
@@ -153,7 +153,8 @@ void MainWindow::compararVersiones(bool downSucc, QString strError)
             writeText(newFile, msg_alert);
         }
     }else{
-        writeText(strError+"!", msg_alert);
+        writeText("^ ["+strError+"]", msg_alert);
+        emit errorGeneral(100);
     }
 }
 
@@ -231,6 +232,33 @@ void MainWindow::setLogoEMG()
 
 void MainWindow::on_actionStart_triggered()
 {
-    mkdirTemp(true);
-    downComponents("https://raw.githubusercontent.com/dkmpos89/softEGM_updates/master/soft-emg-version.xml", compVersion);
+    if(!soft_actualizando)
+    {
+        soft_actualizando = true;
+        mtimer = new QTimer(this);
+        connect(mtimer, SIGNAL(timeout()), this, SLOT(progressBarSetValue(int val=1)));
+        mtimer->start(2000);
+
+        mkdirTemp(true);
+        downComponents("https://raw.githubusercontent.com/dkmpos89/softEGM_updates/master/soft-emg-version.xml", compVersion);
+    }else{
+        QMessageBox::information(this, "Importante_", QString("Actualizacion en curso %1%").arg(ui->progressBar->value()));
+    }
+}
+
+void MainWindow::progressBarSetValue(int val)
+{
+    if(val==1){
+        int cv = ui->progressBar->value()+1;
+
+        if(cv>=99){
+            disconnect(mtimer, SIGNAL(timeout()), this, SLOT(progressBarSetValue(int)));
+            mtimer->stop();
+            mtimer->deleteLater();
+            return;
+        }
+        ui->progressBar->setValue(cv);
+    }else{
+        ui->progressBar->setValue(val);
+    }
 }
