@@ -23,12 +23,16 @@ public:
     void initProcess();
     void mkdirTemp(bool f);
     void writeText(QString text, int color);
+    void setLogoEMG();
 public slots:
     void execBatchFile(bool b);
     void readOutput();
     void readError();
     QString getVersionXML(QString file);
     void compararVersiones(bool downSucc, QString strError);
+private slots:
+    void on_actionStart_triggered();
+
 private:
     Ui::MainWindow *ui;
     QProcess *batProcess;
