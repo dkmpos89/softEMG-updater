@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>360</height>
+    <width>750</width>
+    <height>433</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>600</width>
+    <width>750</width>
     <height>360</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>600</width>
-    <height>360</height>
+    <width>750</width>
+    <height>16777215</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -27,13 +27,32 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" colspan="2">
-     <widget class="QStackedWidget" name="stackedWidget">
+    <item row="0" column="0">
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="page">
-       <layout class="QGridLayout" name="gridLayout_2">
+      <widget class="QWidget" name="tab">
+       <attribute name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/images/console.png</normaloff>:/images/console.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Consola</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="0">
+         <widget class="Console" name="terminal">
+          <property name="plainText">
+           <string/>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="0">
          <widget class="QProgressBar" name="progressBar">
           <property name="value">
@@ -44,17 +63,110 @@
           </property>
          </widget>
         </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/images/settings.png</normaloff>:/images/settings.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Configuraciones</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="1" colspan="2">
+         <widget class="QLineEdit" name="urlRepositorio">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>https://github.com/dkmpos89/softEGM_updates/</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="3">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>679</width>
+            <height>204</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="2" column="1">
+         <widget class="QPushButton" name="btnActualizarInfo">
+          <property name="text">
+           <string>Actualizar Informacion</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
-         <widget class="Console" name="terminal">
-          <property name="plainText">
+         <widget class="QLabel" name="label">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Repositorio actual: </string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Versiones: </string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QCheckBox" name="checkBox">
+          <property name="maximumSize">
+           <size>
+            <width>20</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
            <string/>
           </property>
          </widget>
         </item>
+        <item row="1" column="1" colspan="3">
+         <widget class="QComboBox" name="comboB_versiones">
+          <item>
+           <property name="text">
+            <string>Latest</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="2" column="2" colspan="2">
+         <widget class="QPushButton" name="btnAplicar">
+          <property name="text">
+           <string>Aplicar</string>
+          </property>
+         </widget>
+        </item>
        </layout>
-      </widget>
-      <widget class="QWidget" name="page_2">
-       <layout class="QGridLayout" name="gridLayout_3"/>
       </widget>
      </widget>
     </item>
@@ -65,7 +177,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>600</width>
+     <width>750</width>
      <height>21</height>
     </rect>
    </property>
@@ -112,6 +224,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionStart"/>
+   <addaction name="actionStop"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionExit">
@@ -130,6 +244,10 @@
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/qt.png</normaloff>:/images/qt.png</iconset>
+   </property>
    <property name="text">
     <string>About</string>
    </property>
@@ -145,11 +263,19 @@
    </property>
   </action>
   <action name="actionStart">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/Media-Player.ico</normaloff>:/images/Media-Player.ico</iconset>
+   </property>
    <property name="text">
     <string>Start</string>
    </property>
   </action>
   <action name="actionStop">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/application-exit.png</normaloff>:/images/application-exit.png</iconset>
+   </property>
    <property name="text">
     <string>Stop</string>
    </property>
@@ -163,7 +289,9 @@
    <header>console.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionExit</sender>
@@ -178,6 +306,22 @@
     <hint type="destinationlabel">
      <x>311</x>
      <y>183</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>urlRepositorio</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>717</x>
+     <y>107</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>680</x>
+     <y>107</y>
     </hint>
    </hints>
   </connection>

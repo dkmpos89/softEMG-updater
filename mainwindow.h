@@ -15,7 +15,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    enum {compVersion,execBatch,other};
+    enum {compVersion,execBatch,actComboBox,other};
     enum {msg_alert,msg_notify,msg_info};
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -25,14 +25,17 @@ public:
     void writeText(QString text, int color);
     void setLogoEMG();
 public slots:
-    void execBatchFile(bool b);
+    void execBatchFile(bool b, QString msg);
     void readOutput();
     void readError();
-    QString getVersionXML(QString file);
+    QStringList getFromXML(QString file, QString token, int cant);
     void compararVersiones(bool downSucc, QString strError);
     void progressBarSetValue(int val);
+    void actualizarComboBox(bool flag, QString msg);
 private slots:
     void on_actionStart_triggered();
+    void on_btnActualizarInfo_clicked();
+
 signals:
     errorGeneral(int);
 private:
@@ -46,6 +49,10 @@ private:
 
     bool soft_actualizando = false; // indica si se inicio alguna actualizacion del software
     QTimer *mtimer;
+
+    QString gitrepository = "https://github.com/dkmpos89/softEGM_updates/";
+    QString version_to_updated = "Latest";
+
 };
 
 #endif // MAINWINDOW_H

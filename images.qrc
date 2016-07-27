@@ -6,5 +6,22 @@
         <file>images/disconnect.png</file>
         <file>images/settings.png</file>
         <file>data/ascii_logo.txt</file>
+        <file>images/logo.png</file>
+        <file>images/023.png</file>
+        <file>images/026.png</file>
+        <file>images/045.png</file>
+        <file>images/046.png</file>
+        <file>images/bug.png</file>
+        <file>images/console.png</file>
+        <file>images/Gear.ico</file>
+        <file>images/magnifyingglass.ico</file>
+        <file>images/Media-Player.ico</file>
+        <file>images/Power.ico</file>
+        <file>images/qt.png</file>
+        <file>images/refresh2.ico</file>
+        <file>images/reload.ico</file>
+        <file>images/start.png</file>
+        <file>images/stop.png</file>
+        <file>images/Task Manager.ico</file>
     </qresource>
 </RCC>

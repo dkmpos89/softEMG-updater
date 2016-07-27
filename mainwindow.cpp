@@ -10,18 +10,20 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
     setLogoEMG();
-
     connect(this, SIGNAL(errorGeneral(int)), ui->progressBar, SLOT(setValue(int)) );
+
+
     // paso 1: Creacion de directorio temporal
-    // mkdirTemp(true);
+    mkdirTemp(true);
+
+    getFromXML("C:/Users/diego.campos/Desktop/softEMG/soft-auto-updater/temp/soft-emg-version.xml", "nversion", 2);
 
     // paso 2: Descargar el archivo XML para verificar la version actual
     // downComponents("https://raw.githubusercontent.com/dkmpos89/softEGM_updates/master/soft-emg-version.xml", compVersion);
 
     // paso 3: verificar si el software necesita actualizarce
-    // getVersionXML(QDir::currentPath()+"/temp/soft-emg-version.xml");
+    // getFromXML(QDir::currentPath()+"/temp/soft-emg-version.xml");
 
     // paso 4: Descargar el archivo ZIP que contiene las actualizaciones
     // downComponents("https://github.com/dkmpos89/softEGM_updates/raw/master/soft-updates.zip", execBatch);
@@ -71,7 +73,11 @@ void MainWindow::downComponents(QString url, int postOp)
         break;
 
     case 1:
-        connect(downManager, SIGNAL(downFinished(bool)), this, SLOT(execBatchFile(bool)) );
+        connect(downManager, SIGNAL(downFinished(bool, QString)), this, SLOT(execBatchFile(bool, QString)) );
+        break;
+
+    case 2:
+        connect(downManager, SIGNAL(downFinished(bool, QString)), this, SLOT(actualizarComboBox(bool, QString)) );
         break;
 
     default:
@@ -79,9 +85,39 @@ void MainWindow::downComponents(QString url, int postOp)
     }
 }
 
-QString MainWindow::getVersionXML(QString file)
+
+
+
+//==========================================================================================//
+//                                       SLOTS                                              //
+
+void MainWindow::execBatchFile(bool b, QString msg)
 {
+    // paso 3:
+    if(b) QMessageBox::information(this, tr("Success"),tr("Archivo descargado con exito!") );
+    else  QMessageBox::information(this, tr("Failed"),tr("Error al descargar el archivo.") );
+
+    //initProcess();
+}
+
+void MainWindow::readOutput()
+{
+    QString buff = QString::fromLatin1(batProcess->readAllStandardOutput());
+    writeText(buff, Qt::green);
+}
+
+void MainWindow::readError()
+{
+    QString error = QString::fromLocal8Bit(batProcess->readAllStandardError());
+    writeText(error, Qt::red);
+}
+
+QStringList MainWindow::getFromXML(QString file, QString token, int cant)
+{
+    int cont = 0;
+    QStringList valtokens;
     QFile archivo(file);
+
     if (archivo.open(QFile::ReadOnly | QFile::Text))
     {
         QXmlStreamReader reader;
@@ -92,18 +128,17 @@ QString MainWindow::getVersionXML(QString file)
             if (reader.isStartElement())
             {
                 QString name = reader.name().toString();
-                //QTextStream(stdout) << reader.attributes().first().value().toString() << endl;
-
-                if(name=="nversion"){
-                    //QTextStream(stdout) <<name+": "<<reader.readElementText() << endl;
-                    return reader.readElementText();
+                QTextStream(stdout)<<name<<endl;
+                if( name==token ){
+                    if(cont >= cant) break;
+                    valtokens << reader.readElementText();
+                    cont++;
                 }
             }
         }
         if (reader.hasError())
         {
             writeText(reader.errorString(), msg_alert);
-            return NULL;
         }
 
     }else{
@@ -111,16 +146,8 @@ QString MainWindow::getVersionXML(QString file)
     }
 
     archivo.close();
-    return NULL;
-}
+    return valtokens;
 
-void MainWindow::execBatchFile(bool b)
-{
-    // paso 3:
-    if(b) QMessageBox::information(this, tr("Success"),tr("Archivo descargado con exito!") );
-    else  QMessageBox::information(this, tr("Failed"),tr("Error al descargar el archivo.") );
-
-    //initProcess();
 }
 
 void MainWindow::compararVersiones(bool downSucc, QString strError)
@@ -136,14 +163,14 @@ void MainWindow::compararVersiones(bool downSucc, QString strError)
         QString oldFile = rootPath+"/soft-emg-version.xml";
 
         if(QFile(newFile).exists() && QFile(oldFile).exists()){
-            QString new_version = getVersionXML(newFile);
-            QString old_version = getVersionXML(oldFile);
+            QStringList new_version = getFromXML(newFile, "nversion", 1);
+            QStringList old_version = getFromXML(oldFile, "nversion", 1);
 
             // este bloque se debe cambiar por lo q hara finalmente el software!::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::>
-            if(new_version!=old_version){
+            if(new_version[0] != old_version[0] && old_version.size()>0 && new_version.size()>0){
                 writeText("Hay actualizaciones disponibles", msg_notify);
-                writeText("Version actual: "+old_version+"", msg_info);
-                writeText("Version disponible: "+new_version+"", msg_info);
+                writeText("Version actual: "+old_version[0]+"", msg_info);
+                writeText("Version disponible: "+new_version[0]+"", msg_info);
             }
             else
                 writeText("Software en su version mas  reciente!", msg_notify);
@@ -158,33 +185,49 @@ void MainWindow::compararVersiones(bool downSucc, QString strError)
     }
 }
 
-void MainWindow::initProcess()
+void MainWindow::progressBarSetValue(int val)
 {
-    batProcess = new QProcess(this);
-    batProcess->setProcessChannelMode( QProcess::SeparateChannels );
-    batProcess->start(UPDATER, ARGUMENTS, QProcess::ReadWrite);
-    batProcess->waitForStarted(5000);
+    if(val==1){
+        int cv = ui->progressBar->value()+1;
 
-    connect(batProcess, SIGNAL( readyReadStandardOutput() ), this, SLOT(readOutput()) );
-    connect(batProcess, SIGNAL( readyReadStandardError() ), this, SLOT(readError()) );
-
-    batProcess->write("cd C:/Users/diego.campos/Desktop/soft\n");
-    batProcess->waitForFinished(5000);
-    batProcess->write("update.bat\n");
+        if(cv>=99){
+            disconnect(mtimer, SIGNAL(timeout()), this, SLOT(progressBarSetValue(int)));
+            mtimer->stop();
+            mtimer->deleteLater();
+            soft_actualizando = false;
+            return;
+        }
+        ui->progressBar->setValue(cv);
+    }else{
+        ui->progressBar->setValue(val);
+    }
 
 }
 
-void MainWindow::readOutput()
+void MainWindow::actualizarComboBox(bool flag, QString msg)
 {
-    QString buff = QString::fromLatin1(batProcess->readAllStandardOutput());
-    writeText(buff, Qt::green);
+    if(flag) {
+        writeText("^ [OK]", msg_info);
+        ui->comboB_versiones->clear();
+        ui->comboB_versiones->addItem("Latest");
+        QString file = QDir::currentPath()+"/temp/soft-emg-version.xml";
+        ui->comboB_versiones->addItems(getFromXML(file, "nversion", 10));
+        ui->tabWidget->setCurrentIndex(1);
+        writeText("^^ [Lista de versiones actualizadas]", msg_info);
+    }
+    else{
+        writeText("^ ["+msg+"]", msg_alert);
+    }
+
+    ui->tabWidget->setTabEnabled(1, true);
+    soft_actualizando = false;
 }
 
-void MainWindow::readError()
-{
-    QString error = QString::fromLocal8Bit(batProcess->readAllStandardError());
-    writeText(error, Qt::red);
-}
+
+
+
+//==========================================================================================//
+//                                       FUNCIONES                                          //
 
 void MainWindow::writeText(QString text, int color)
 {
@@ -214,18 +257,16 @@ void MainWindow::writeText(QString text, int color)
 void MainWindow::setLogoEMG()
 {
     ui->terminal->clear();
-    QString path = ":/data/ascii_logo.txt";
-    QFile file(path);
-
-    if (!file.open(QIODevice::ReadOnly)){
-        writeText("../logo.ascii not found!", msg_notify);
-        return;
-    }else{
-        QTextStream in(&file);
-        ui->terminal->setText(in.readAll()+"\n\n");
-    }
+    QTextCursor imageCursor = ui->terminal->textCursor();
+    imageCursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
+    QPixmap icon = QPixmap(":/images/logo.png");
+    QImage image = icon.toImage();
+    imageCursor.insertImage(image);
+    ui->terminal->setTextCursor(imageCursor);
 
     QTextCursor cursor = ui->terminal->textCursor();
+    cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
+    cursor.insertText("\n");
     cursor.movePosition(QTextCursor::End);
     ui->terminal->setTextCursor(cursor);
 }
@@ -246,19 +287,36 @@ void MainWindow::on_actionStart_triggered()
     }
 }
 
-void MainWindow::progressBarSetValue(int val)
+void MainWindow::initProcess()
 {
-    if(val==1){
-        int cv = ui->progressBar->value()+1;
+    batProcess = new QProcess(this);
+    batProcess->setProcessChannelMode( QProcess::SeparateChannels );
+    batProcess->start(UPDATER, ARGUMENTS, QProcess::ReadWrite);
+    batProcess->waitForStarted(5000);
 
-        if(cv>=99){
-            disconnect(mtimer, SIGNAL(timeout()), this, SLOT(progressBarSetValue(int)));
-            mtimer->stop();
-            mtimer->deleteLater();
-            return;
-        }
-        ui->progressBar->setValue(cv);
-    }else{
-        ui->progressBar->setValue(val);
-    }
+    connect(batProcess, SIGNAL( readyReadStandardOutput() ), this, SLOT(readOutput()) );
+    connect(batProcess, SIGNAL( readyReadStandardError() ), this, SLOT(readError()) );
+
+    batProcess->write("cd C:/Users/diego.campos/Desktop/soft\n");
+    batProcess->waitForFinished(5000);
+    batProcess->write("update.bat\n");
+
 }
+
+void MainWindow::on_btnActualizarInfo_clicked()
+{
+    if(!soft_actualizando)
+    {
+        soft_actualizando = true;
+        ui->tabWidget->setTabEnabled(1, false);
+        QString url = "https://raw.githubusercontent.com/dkmpos89/softEGM_updates/master/soft-emg-version.xml";
+        downComponents(url, actComboBox);
+    }else{
+        QMessageBox::information(this, "Advertencia_", "No se puede editar la configuracion durante una actualizacion!");
+    }
+
+}
+
+
+
+
