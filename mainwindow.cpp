@@ -12,12 +12,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     setLogoEMG();
     connect(this, SIGNAL(errorGeneral(int)), ui->progressBar, SLOT(setValue(int)) );
-
+    connect(this, &MainWindow::errorGeneral, [=]() {soft_actualizando = false;} );
+    //connect(ui->sgram_tfr, &QCheckBox::toggled, [=](const bool Value ) { ui->sgram_tfr_value->setEnabled(Value);  } );
 
     // paso 1: Creacion de directorio temporal
     mkdirTemp(true);
 
-    getFromXML("C:/Users/diego.campos/Desktop/softEMG/soft-auto-updater/temp/soft-emg-version.xml", "nversion", 2);
+    //getFromXML("C:/Users/diego.campos/Desktop/softEMG/soft-auto-updater/temp/soft-emg-version.xml", "nversion", 2);
 
     // paso 2: Descargar el archivo XML para verificar la version actual
     // downComponents("https://raw.githubusercontent.com/dkmpos89/softEGM_updates/master/soft-emg-version.xml", compVersion);
@@ -61,7 +62,6 @@ void MainWindow::mkdirTemp(bool f)
 
 void MainWindow::downComponents(QString url, int postOp)
 {
-    writeText("Descargando en ../temp/soft-emg-version.xml", msg_notify);
     // paso 2: Descargar la actualizacion
     DownloadManager *downManager = new DownloadManager(this);
     const QUrl iUrl(url);
@@ -69,6 +69,7 @@ void MainWindow::downComponents(QString url, int postOp)
     switch(postOp)
     {
     case 0:
+        writeText("Descargando en ../temp/soft-emg-version.xml", msg_notify);
         connect(downManager, SIGNAL(downFinished(bool, QString)), this, SLOT(compararVersiones(bool,QString)) );
         break;
 
@@ -77,6 +78,7 @@ void MainWindow::downComponents(QString url, int postOp)
         break;
 
     case 2:
+        writeText("Actualizando archivo en ../temp/soft-emg-version.xml", msg_notify);
         connect(downManager, SIGNAL(downFinished(bool, QString)), this, SLOT(actualizarComboBox(bool, QString)) );
         break;
 
@@ -91,12 +93,14 @@ void MainWindow::downComponents(QString url, int postOp)
 //==========================================================================================//
 //                                       SLOTS                                              //
 
-void MainWindow::execBatchFile(bool b, QString msg)
+void MainWindow::execBatchFile(bool dowSucc, QString msg)
 {
+    (void)(msg);
     // paso 3:
-    if(b) QMessageBox::information(this, tr("Success"),tr("Archivo descargado con exito!") );
+    if(dowSucc) QMessageBox::information(this, tr("Success"),tr("Archivo descargado con exito!") );
     else  QMessageBox::information(this, tr("Failed"),tr("Error al descargar el archivo.") );
 
+    writeText("^ ["+msg+"]", msg_info);
     //initProcess();
 }
 
@@ -128,7 +132,7 @@ QStringList MainWindow::getFromXML(QString file, QString token, int cant)
             if (reader.isStartElement())
             {
                 QString name = reader.name().toString();
-                QTextStream(stdout)<<name<<endl;
+                //QTextStream(stdout)<<name<<endl;
                 if( name==token ){
                     if(cont >= cant) break;
                     valtokens << reader.readElementText();
@@ -142,7 +146,7 @@ QStringList MainWindow::getFromXML(QString file, QString token, int cant)
         }
 
     }else{
-        writeText("Error al abrir el archivo xml: "+file, msg_alert);
+        writeText("^ [Error al abrir el archivo xml: "+file+"]", msg_alert);
     }
 
     archivo.close();
@@ -153,7 +157,7 @@ QStringList MainWindow::getFromXML(QString file, QString token, int cant)
 void MainWindow::compararVersiones(bool downSucc, QString strError)
 {
     if(downSucc){
-        writeText("Comparando con la version instalada del software ../soft-emg-version.xml", msg_info);
+        writeText("^ [Comparando con la version instalada del software ../soft-emg-version.xml]", msg_info);
         /** cdUp subir hasta el directorio raiz del programa principal **/
         QDir path = QDir::currentPath();
         path.cdUp();
@@ -162,25 +166,31 @@ void MainWindow::compararVersiones(bool downSucc, QString strError)
         QString newFile = QDir::currentPath()+"/temp/soft-emg-version.xml";
         QString oldFile = rootPath+"/soft-emg-version.xml";
 
-        if(QFile(newFile).exists() && QFile(oldFile).exists()){
+        if(QFile(newFile).exists() && QFile(oldFile).exists())
+        {
             QStringList new_version = getFromXML(newFile, "nversion", 1);
             QStringList old_version = getFromXML(oldFile, "nversion", 1);
 
             // este bloque se debe cambiar por lo q hara finalmente el software!::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::>
-            if(new_version[0] != old_version[0] && old_version.size()>0 && new_version.size()>0){
-                writeText("Hay actualizaciones disponibles", msg_notify);
-                writeText("Version actual: "+old_version[0]+"", msg_info);
-                writeText("Version disponible: "+new_version[0]+"", msg_info);
+            if((new_version[0] != old_version[0]) && old_version.size()>0 && new_version.size()>0){
+                writeText("Actualizaciones disponibles: ", msg_notify);
+                writeText("^ [Version actual: "+old_version[0]+"]", msg_info);
+                writeText("^ [Version disponible: "+new_version[0]+"]", msg_info);
+
+                writeText("Descargando componentes de la actualizacion: "+new_version[0]+"...", msg_notify);
+                downComponents("https://github.com/dkmpos89/softEGM_updates/raw/master/soft-updates.zip", execBatch);
             }
             else
-                writeText("Software en su version mas  reciente!", msg_notify);
+                writeText("Software en su version mas  reciente!!", msg_notify);
         }else{
             writeText("Archivos XML no encontrado...", msg_alert);
             writeText(oldFile, msg_alert);
             writeText(newFile, msg_alert);
+            emit errorGeneral(100);
         }
     }else{
         writeText("^ ["+strError+"]", msg_alert);
+        soft_actualizando = false;
         emit errorGeneral(100);
     }
 }
@@ -194,7 +204,6 @@ void MainWindow::progressBarSetValue(int val)
             disconnect(mtimer, SIGNAL(timeout()), this, SLOT(progressBarSetValue(int)));
             mtimer->stop();
             mtimer->deleteLater();
-            soft_actualizando = false;
             return;
         }
         ui->progressBar->setValue(cv);
@@ -211,12 +220,19 @@ void MainWindow::actualizarComboBox(bool flag, QString msg)
         ui->comboB_versiones->clear();
         ui->comboB_versiones->addItem("Latest");
         QString file = QDir::currentPath()+"/temp/soft-emg-version.xml";
-        ui->comboB_versiones->addItems(getFromXML(file, "nversion", 10));
-        ui->tabWidget->setCurrentIndex(1);
-        writeText("^^ [Lista de versiones actualizadas]", msg_info);
+        QStringList lista = getFromXML(file, "nversion", 10);
+        if(lista.size()>0){
+            ui->comboB_versiones->addItems(lista);
+            ui->tabWidget->setCurrentIndex(1);
+            writeText("^^ [Lista de versiones actualizadas]", msg_info);
+        }else{
+            writeText("^^ [Error al cargar el archivo de versiones actualizadas]", msg_alert);
+        }
     }
     else{
         writeText("^ ["+msg+"]", msg_alert);
+        soft_actualizando = false;
+        emit errorGeneral(100);
     }
 
     ui->tabWidget->setTabEnabled(1, true);
@@ -280,7 +296,6 @@ void MainWindow::on_actionStart_triggered()
         connect(mtimer, SIGNAL(timeout()), this, SLOT(progressBarSetValue(int val=1)));
         mtimer->start(2000);
 
-        mkdirTemp(true);
         downComponents("https://raw.githubusercontent.com/dkmpos89/softEGM_updates/master/soft-emg-version.xml", compVersion);
     }else{
         QMessageBox::information(this, "Importante_", QString("Actualizacion en curso %1%").arg(ui->progressBar->value()));
@@ -320,3 +335,14 @@ void MainWindow::on_btnActualizarInfo_clicked()
 
 
 
+
+void MainWindow::on_actionClean_triggered()
+{
+    setLogoEMG();
+}
+
+void MainWindow::on_actionStop_triggered()
+{
+    soft_actualizando = false;
+    writeText("Proceso detenido por el usuario.", msg_alert);
+}

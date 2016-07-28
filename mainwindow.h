@@ -25,7 +25,7 @@ public:
     void writeText(QString text, int color);
     void setLogoEMG();
 public slots:
-    void execBatchFile(bool b, QString msg);
+    void execBatchFile(bool dowSucc, QString msg);
     void readOutput();
     void readError();
     QStringList getFromXML(QString file, QString token, int cant);
@@ -35,6 +35,10 @@ public slots:
 private slots:
     void on_actionStart_triggered();
     void on_btnActualizarInfo_clicked();
+
+    void on_actionClean_triggered();
+
+    void on_actionStop_triggered();
 
 signals:
     errorGeneral(int);

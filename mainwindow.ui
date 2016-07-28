@@ -188,6 +188,7 @@
     <addaction name="actionStart"/>
     <addaction name="actionStop"/>
     <addaction name="separator"/>
+    <addaction name="actionClean"/>
     <addaction name="actionCheck_for_Updates"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -225,7 +226,10 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionStart"/>
+   <addaction name="separator"/>
    <addaction name="actionStop"/>
+   <addaction name="separator"/>
+   <addaction name="actionClean"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionExit">
@@ -278,6 +282,15 @@
    </property>
    <property name="text">
     <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionClean">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/clear.png</normaloff>:/images/clear.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clean console</string>
    </property>
   </action>
  </widget>
