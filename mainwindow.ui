@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>750</width>
+    <width>830</width>
     <height>433</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>750</width>
+    <width>830</width>
     <height>360</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>750</width>
+    <width>830</width>
     <height>16777215</height>
    </size>
   </property>
@@ -74,18 +74,22 @@
         <string>Configuraciones</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="1" colspan="2">
-         <widget class="QLineEdit" name="urlRepositorio">
-          <property name="enabled">
-           <bool>false</bool>
+        <item row="2" column="1">
+         <widget class="QPushButton" name="btnActualizarInfo">
+          <property name="text">
+           <string>Descargar Informacion</string>
           </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label">
           <property name="font">
            <font>
             <pointsize>10</pointsize>
            </font>
           </property>
           <property name="text">
-           <string>https://github.com/dkmpos89/softEGM_updates/</string>
+           <string>Repositorio actual: </string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -105,26 +109,31 @@
           </property>
          </spacer>
         </item>
-        <item row="2" column="1">
-         <widget class="QPushButton" name="btnActualizarInfo">
-          <property name="text">
-           <string>Actualizar Informacion</string>
+        <item row="0" column="1" colspan="2">
+         <widget class="QLineEdit" name="urlRepositorio">
+          <property name="enabled">
+           <bool>false</bool>
           </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label">
           <property name="font">
            <font>
             <pointsize>10</pointsize>
            </font>
           </property>
           <property name="text">
-           <string>Repositorio actual: </string>
+           <string>https://github.com/dkmpos89/softEGM_updates/</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
           </property>
+         </widget>
+        </item>
+        <item row="1" column="1" colspan="3">
+         <widget class="QComboBox" name="comboB_versiones">
+          <item>
+           <property name="text">
+            <string>Latest</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item row="1" column="0">
@@ -150,19 +159,73 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="1" colspan="3">
-         <widget class="QComboBox" name="comboB_versiones">
-          <item>
-           <property name="text">
-            <string>Latest</string>
-           </property>
-          </item>
+        <item row="5" column="1" colspan="3">
+         <widget class="QLineEdit" name="proxyHostName"/>
+        </item>
+        <item row="4" column="1" colspan="3">
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="6" column="1" colspan="3">
+         <widget class="QLineEdit" name="proxyPort"/>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Puerto:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
          </widget>
         </item>
-        <item row="2" column="2" colspan="2">
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Configuracion proxy</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Host name:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="3">
+         <widget class="QPushButton" name="btnAplicarProxy">
+          <property name="text">
+           <string>Aplicar</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
          <widget class="QPushButton" name="btnAplicar">
           <property name="text">
            <string>Aplicar</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="1">
+         <widget class="QPushButton" name="btnRelleno">
+          <property name="text">
+           <string>Boton de relleno :-)</string>
           </property>
          </widget>
         </item>
@@ -177,7 +240,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>750</width>
+     <width>830</width>
      <height>21</height>
     </rect>
    </property>
@@ -207,6 +270,8 @@
     <addaction name="actionChangelog"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
+    <addaction name="separator"/>
+    <addaction name="actionCMD"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuNew"/>
@@ -291,6 +356,14 @@
    </property>
    <property name="text">
     <string>Clean console</string>
+   </property>
+  </action>
+  <action name="actionCMD">
+   <property name="text">
+    <string>CMD</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
    </property>
   </action>
  </widget>

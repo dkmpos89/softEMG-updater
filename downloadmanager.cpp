@@ -1,9 +1,19 @@
 #include "downloadmanager.h"
 #include "QDir"
+#include <QNetworkProxy>
+
 
 DownloadManager::DownloadManager(QObject *parent) : QObject(parent)
 {
     connect(&manager, SIGNAL(finished(QNetworkReply*)),SLOT(downloadFinished(QNetworkReply*)));
+}
+
+void DownloadManager::setProxy(QString HostName, qint16 port)
+{
+    QNetworkProxy myProxy;
+    myProxy.setHostName(HostName);
+    myProxy.setPort(port);
+    manager.setProxy(myProxy);
 }
 
 void DownloadManager::doDownload(const QUrl &url)

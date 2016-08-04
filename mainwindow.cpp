@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "downloadmanager.h"
 #include <QMessageBox>
+#include <QInputDialog>
 
 #include <QXmlStreamReader>
 
@@ -10,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->actionCMD->setDisabled(true);
     setLogoEMG();
     connect(this, SIGNAL(errorGeneral(int)), ui->progressBar, SLOT(setValue(int)) );
     connect(this, &MainWindow::errorGeneral, [=]() {soft_actualizando = false;} );
@@ -42,6 +44,9 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+    batProcess->close();
+    batProcess->terminate();
+    batProcess->kill();
 }
 
 void MainWindow::mkdirTemp(bool f)
@@ -64,6 +69,11 @@ void MainWindow::downComponents(QString url, int postOp)
 {
     // paso 2: Descargar la actualizacion
     DownloadManager *downManager = new DownloadManager(this);
+    if(!proxyHostName.isNull() && proxyPort > -1){
+        downManager->setProxy(proxyHostName, proxyPort);
+        QTextStream(stdout)<<"New Proxy!"<<endl;
+    }
+
     const QUrl iUrl(url);
     downManager->doDownload(iUrl);
     switch(postOp)
@@ -74,14 +84,19 @@ void MainWindow::downComponents(QString url, int postOp)
         break;
 
     case 1:
+        writeText("Descargando archivo "+url+"", msg_notify);
         connect(downManager, SIGNAL(downFinished(bool, QString)), this, SLOT(execBatchFile(bool, QString)) );
         break;
 
     case 2:
-        writeText("Actualizando archivo en ../temp/soft-emg-version.xml", msg_notify);
+        writeText("Descargando componentes de la actualizacion...", msg_notify);
         connect(downManager, SIGNAL(downFinished(bool, QString)), this, SLOT(actualizarComboBox(bool, QString)) );
         break;
 
+    case 3:
+        writeText("Descargando desde "+url, msg_notify);
+        downComponents("https://github.com/dkmpos89/softEGM_updates/raw/master/soft-updates.zip", execBatch);
+        break;
     default:
         break;
     }
@@ -97,11 +112,20 @@ void MainWindow::execBatchFile(bool dowSucc, QString msg)
 {
     (void)(msg);
     // paso 3:
-    if(dowSucc) QMessageBox::information(this, tr("Success"),tr("Archivo descargado con exito!") );
-    else  QMessageBox::information(this, tr("Failed"),tr("Error al descargar el archivo.") );
+    if(dowSucc) {
+        QMessageBox::information(this, tr("Success"),tr("Archivo descargado con exito!") );
+        initProcess();
+        ui->actionCMD->setEnabled(true);
+        //QString cmd(WORKING_DIR+"/temp/install.bat");
+        //batProcess->write(cmd.toLatin1());
+    }
 
-    writeText("^ ["+msg+"]", msg_info);
-    //initProcess();
+    else{
+        QMessageBox::information(this, tr("Failed"),tr("Error al descargar el archivo.") );
+        writeText("^ ["+msg+"]", msg_alert);
+        soft_actualizando = false;
+        emit errorGeneral(100);
+    }
 }
 
 void MainWindow::readOutput()
@@ -177,8 +201,7 @@ void MainWindow::compararVersiones(bool downSucc, QString strError)
                 writeText("^ [Version actual: "+old_version[0]+"]", msg_info);
                 writeText("^ [Version disponible: "+new_version[0]+"]", msg_info);
 
-                writeText("Descargando componentes de la actualizacion: "+new_version[0]+"...", msg_notify);
-                downComponents("https://github.com/dkmpos89/softEGM_updates/raw/master/soft-updates.zip", execBatch);
+                downComponents("https://github.com/dkmpos89/softEGM_updates/raw/master/install.bat", other);
             }
             else
                 writeText("Software en su version mas  reciente!!", msg_notify);
@@ -309,13 +332,16 @@ void MainWindow::initProcess()
     batProcess->start(UPDATER, ARGUMENTS, QProcess::ReadWrite);
     batProcess->waitForStarted(5000);
 
+    QString cmd("cd "+WORKING_DIR+"\n");
+    batProcess->write(cmd.toLatin1());
+    batProcess->waitForFinished(1000);
+    QByteArray ba = batProcess->readAll();//clean stdout
+    Q_UNUSED(ba);
+
     connect(batProcess, SIGNAL( readyReadStandardOutput() ), this, SLOT(readOutput()) );
     connect(batProcess, SIGNAL( readyReadStandardError() ), this, SLOT(readError()) );
 
-    batProcess->write("cd C:/Users/diego.campos/Desktop/soft\n");
-    batProcess->waitForFinished(5000);
-    batProcess->write("update.bat\n");
-
+    writeText("^ [Iniciando la instalacion de los nuevos componentes.... por favor espere]", msg_info);
 }
 
 void MainWindow::on_btnActualizarInfo_clicked()
@@ -332,10 +358,6 @@ void MainWindow::on_btnActualizarInfo_clicked()
 
 }
 
-
-
-
-
 void MainWindow::on_actionClean_triggered()
 {
     setLogoEMG();
@@ -345,4 +367,23 @@ void MainWindow::on_actionStop_triggered()
 {
     soft_actualizando = false;
     writeText("Proceso detenido por el usuario.", msg_alert);
+}
+
+void MainWindow::on_actionCMD_triggered()
+{
+    bool ok;
+    // Ask for birth date as a string.
+    QString text = QInputDialog::getText(0, "Linea de comandos_",
+                                         "Ingrese:", QLineEdit::Normal,
+                                         "", &ok);
+    if (ok && !text.isEmpty()) {
+        if(batProcess->state()==QProcess::Running)
+            batProcess->write(text.toLatin1());
+    }
+}
+
+void MainWindow::on_btnAplicarProxy_clicked()
+{
+    proxyHostName = ui->proxyHostName->text();
+    proxyPort = ui->proxyPort->text().toInt();
 }

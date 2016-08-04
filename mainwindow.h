@@ -37,8 +37,10 @@ private slots:
     void on_btnActualizarInfo_clicked();
 
     void on_actionClean_triggered();
-
     void on_actionStop_triggered();
+    void on_actionCMD_triggered();
+
+    void on_btnAplicarProxy_clicked();
 
 signals:
     errorGeneral(int);
@@ -49,13 +51,16 @@ private:
 
     const QString UPDATER = QString("cmd");
     const QStringList ARGUMENTS = ( QStringList()<<"" );
-    const QString WORKING_DIR = QString("'"+QDir::currentPath()+"'\n");
+    const QString WORKING_DIR = QString(QDir::currentPath());
 
     bool soft_actualizando = false; // indica si se inicio alguna actualizacion del software
     QTimer *mtimer;
 
     QString gitrepository = "https://github.com/dkmpos89/softEGM_updates/";
     QString version_to_updated = "Latest";
+
+    QString proxyHostName = "";
+    qint16 proxyPort = -1;
 
 };
 

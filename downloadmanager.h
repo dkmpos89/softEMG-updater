@@ -33,6 +33,7 @@ public:
     void doDownload(const QUrl &url);
     QString saveFileName(const QUrl &url);
     bool saveToDisk(const QString &filename, QIODevice *data);
+    void setProxy(QString HostName, qint16 port);
 signals:
     void downFinished(bool b, QString msg);
 public slots:
